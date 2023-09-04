@@ -1,44 +1,21 @@
-use std::fs;
-use std::io;
 use std::io::prelude::*;
 use std::fs::File;
 
 mod lz_dictionary;
 use lz_dictionary::{LzDictionary, EMPTY_PATTERN};
+mod file_writer;
+use file_writer::FileWriter;
 
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     let mut file_in = &File::open("file_in.bin")?; 
     let mut input_buffer = Vec::new();
     let mut compressor = LzCompressor::new();
-    
+    let mut file_writer = FileWriter::new("data/data_out.bin")?;
     file_in.read_to_end(&mut input_buffer)?;
  
     let compressed_data = compressor.compress_data(input_buffer.as_ref());
-    for code in compressed_data.iter() {
-        
-    }
+    file_writer.write_packed_contents_to_file(&compressed_data)?;
     Ok(())
-}
-
-struct FileWriter {
-    
-}
-
-impl FileWriter {
-    pub fn write_packed_contents_to_file(data_to_write: &[u16]) -> io::Result<()> {
-        let mut file_out = File::create("data_out.bin")?;
-        let mut last_char : u16 = 0;
-        let current_nof_bits = 9;
-        let mut stitching_bit = 0;
-        for code in data_to_write.iter() {
-            let current_char = *code;
-            let byte_out : u8 = (current_char << stitching_bit) as u8 | (last_char >> (current_nof_bits - stitching_bit)) as u8;
-            file_out.write(&[byte_out])?;
-            last_char = current_char;
-            stitching_bit = (stitching_bit + current_nof_bits % u8::BITS) % u8::BITS;
-        }
-        Ok(())
-    } 
 }
 
 struct LzCompressor {
