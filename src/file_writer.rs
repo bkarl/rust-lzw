@@ -2,6 +2,9 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
+
+pub const MAGIC_WORD : [u8;2]= [0x1f, 0x9d];
+
 pub struct FileWriter<W: std::io::Write> {
     file: W,
 }
@@ -15,6 +18,12 @@ impl FileWriter<File> {
 }
 
 impl<W: Write> FileWriter<W> {
+
+    fn write_header(&mut self) -> io::Result<()> {
+        self.file.write(&MAGIC_WORD)?;
+        Ok(())
+    }
+    
     pub fn write_packed_contents_to_file(&mut self, data_to_write: &[u16]) -> io::Result<()> {
         let mut last_char: u16 = 0;
         let current_nof_bits = 9;
@@ -72,4 +81,15 @@ mod tests {
         test_empty: [], [],
         test_single: [1], [1, 0],
         test_double: [1, 1], [1, 2, 0],
-    }}
+        test_triple: [1, 2, 3], [1, 4, 0xC, 0x00],
+    }
+
+    #[test]
+    fn test_write_header() {
+        let mut mock_writer = Vec::new();
+        let mut writer_to_test = FileWriter {file: &mut mock_writer};
+        writer_to_test.write_header().unwrap();
+        assert_eq!(vec![0x1f, 0x9d, 0x09], mock_writer);
+    }
+
+}
