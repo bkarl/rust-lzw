@@ -27,6 +27,10 @@ impl LzDictionary {
         self.dictionary[self.dictionary_idx] = item_to_add;
         self.dictionary_idx += 1;
     }
+
+    pub fn get_size(&self) -> usize {
+        self.dictionary_idx
+    }
 }
 
 #[cfg(test)]
@@ -37,7 +41,7 @@ mod tests {
     fn test_empty_dictionary() {
         let dict_to_test = LzDictionary::new();
 
-        assert_eq!(256, dict_to_test.dictionary_idx);
+        assert_eq!(256, dict_to_test.get_size());
 		for idx in 0 .. 256 {
 	        assert_eq!(Some(idx), dict_to_test.is_pattern_in_dictionary((EMPTY_PATTERN, idx as u16)));
 		}
@@ -50,5 +54,6 @@ mod tests {
 
         assert_eq!(Some(256), dict_to_test.is_pattern_in_dictionary((123,4321)));
         assert_eq!(None, dict_to_test.is_pattern_in_dictionary((321,4321)));
+        assert_eq!(257, dict_to_test.get_size());        
     }
 }

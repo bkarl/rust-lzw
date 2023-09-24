@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
+use crate::lz_compressor::LzCompressorParameters;
 
 pub const MAGIC_WORD : [u8;2]= [0x1f, 0x9d];
 
@@ -19,8 +20,13 @@ impl FileWriter<File> {
 
 impl<W: Write> FileWriter<W> {
 
-    fn write_header(&mut self) -> io::Result<()> {
+    pub fn write_header(&mut self, compressor_params: &LzCompressorParameters) -> io::Result<()> {
         self.file.write(&MAGIC_WORD)?;
+        let mut block_and_code_size : u8 = compressor_params.dict_size_bits;
+        if compressor_params.use_block_code {
+            block_and_code_size |= 0x80;
+        }
+        self.file.write(&[block_and_code_size])?;
         Ok(())
     }
     
@@ -88,8 +94,7 @@ mod tests {
     fn test_write_header() {
         let mut mock_writer = Vec::new();
         let mut writer_to_test = FileWriter {file: &mut mock_writer};
-        writer_to_test.write_header().unwrap();
+        writer_to_test.write_header(&LzCompressorParameters::get_default_parameters()).unwrap();
         assert_eq!(vec![0x1f, 0x9d, 0x09], mock_writer);
     }
-
 }

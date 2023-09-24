@@ -2,24 +2,25 @@ use crate::lz_dictionary::{EMPTY_PATTERN, LzDictionary};
 
 
 pub struct LzCompressorParameters {
-    dict_size_bits: u8,
-    use_block_code: bool
+    pub dict_size_bits: u8,
+    pub use_block_code: bool
 }
 
 impl LzCompressorParameters {
     pub fn get_default_parameters() -> LzCompressorParameters {
-        LzCompressorParameters { dict_size_bits: 8, use_block_code: false }
-        
+        LzCompressorParameters { dict_size_bits: 9, use_block_code: false }        
     }
 }
 
 pub struct LzCompressor {
+    pub parameters: LzCompressorParameters,
     dictionary: LzDictionary,
 }
 
 impl LzCompressor {
     pub fn new() -> LzCompressor {
         LzCompressor {
+            parameters: LzCompressorParameters::get_default_parameters(),
             dictionary: LzDictionary::new(),
         }
     }
@@ -32,7 +33,9 @@ impl LzCompressor {
             if let Some(char_idx) = self.dictionary.is_pattern_in_dictionary(new_pattern) {
                 current_pattern = char_idx;
             } else {
-                self.dictionary.add_pattern_to_dictionary(new_pattern);
+                if self.dictionary.get_size() < 1 << self.parameters.dict_size_bits {                   
+                    self.dictionary.add_pattern_to_dictionary(new_pattern);
+                }
                 ret.push(current_pattern);
                 current_pattern = *byte as u16;
             }
