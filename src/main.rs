@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
+use std::env;
 
 mod lz_dictionary;
 mod file_writer;
@@ -8,7 +9,11 @@ mod lz_compressor;
 use lz_compressor::LzCompressor;
 
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
-    let mut file_in = &File::open("file_in.bin")?;
+
+    let args: Vec<String> = env::args().collect();
+    let path_to_file = &args[1];
+    println!("Compressing file {}", path_to_file);
+    let mut file_in = &File::open(path_to_file)?;
     let mut input_buffer = Vec::new();
     let mut compressor = LzCompressor::new();
     let mut file_writer = FileWriter::new("data/data_out.bin")?;

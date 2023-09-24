@@ -39,7 +39,6 @@ impl LzCompressor {
                 ret.push(current_pattern);
                 current_pattern = *byte as u16;
             }
-            println!("current_pattern {}", current_pattern);
         }
         if current_pattern != EMPTY_PATTERN {
             ret.push(current_pattern);
